@@ -554,3 +554,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--wood-dark); box-
 
 /* ========================= FOCAL-SHIFT V15 - FILTRES BLOG ========================= */
 .blog-filters button{padding:10px 14px;border:1px solid var(--line);border-radius:999px;font:750 .72rem system-ui;background:var(--white);color:var(--ink);cursor:pointer;transition:transform .18s ease,border-color .18s ease,background .18s ease}.blog-filters button:hover,.blog-filters button:focus-visible{border-color:var(--wood-dark);transform:translateY(-1px)}.blog-filters button.is-active{background:var(--ink);border-color:var(--ink);color:#fff}.story-card[hidden]{display:none!important}.filter-status{margin:12px 0 0;color:var(--muted);font-size:.78rem}.blog-empty{padding:30px;text-align:center;border:1px dashed var(--line);border-radius:16px;background:var(--white)}
+
+/* ========================= FOCAL-SHIFT V16 - MAILLAGE ÉDITORIAL ========================= */
+.article-inline-link{color:var(--wood-dark);font-weight:750;text-decoration-thickness:1.5px;text-underline-offset:3px}.article-inline-link:hover,.article-inline-link:focus-visible{color:var(--ink);text-decoration-thickness:2px}
