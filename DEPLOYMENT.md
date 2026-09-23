@@ -1,4 +1,4 @@
-# Déployer Focal-Shift V16
+# Déployer Focal-Shift V17
 
 ## Important
 
@@ -12,6 +12,8 @@ GitHub héberge et partage le code. **GitHub Pages ne convient pas à ce projet*
 4. Ouvrir phpMyAdmin depuis `http://localhost/phpmyadmin/`.
 5. Importer `database/focal_shift.sql`.
 6. Ouvrir `http://localhost/focal-shift/`.
+
+Pour mettre à niveau une base provenant de la V16, ouvrir une seule fois `http://localhost/focal-shift/upgrade-v17.php`, puis supprimer ce script après confirmation.
 
 ## Option 2 — Consultation locale avec Docker
 
