@@ -81,6 +81,50 @@ function equipment_image(?string $path, string $categorySlug = 'camera'): string
     return asset('images/catalog/' . $slug . '.webp');
 }
 
+function technical_spec_fields(): array
+{
+    return [
+        'type_format' => 'Type / format',
+        'resolution_performance' => 'Résolution / performances',
+        'compatibility' => 'Monture / compatibilité',
+        'connectivity' => 'Connectique',
+        'power' => 'Alimentation / autonomie',
+        'weight_dimensions' => 'Poids / dimensions',
+        'included_accessories' => 'Accessoires inclus',
+        'highlights' => 'Fonctions principales',
+    ];
+}
+
+function technical_specs_from_post(array $source): array
+{
+    $specs = [];
+    foreach (technical_spec_fields() as $key => $label) {
+        $specs[$key] = mb_substr(trim((string) ($source[$key] ?? '')), 0, 500);
+    }
+    return $specs;
+}
+
+function decode_technical_specs(?string $json, string $brand = '', string $model = '', string $category = ''): array
+{
+    $decoded = $json ? json_decode($json, true) : null;
+    if (is_array($decoded) && array_filter($decoded, fn($value) => trim((string)$value) !== '')) {
+        return array_merge(array_fill_keys(array_keys(technical_spec_fields()), ''), $decoded);
+    }
+    $known = require __DIR__.'/product-specifications.php';
+    $key = trim($brand.' '.$model);
+    if (isset($known[$key])) return array_merge(array_fill_keys(array_keys(technical_spec_fields()), ''), $known[$key]);
+    return [
+        'type_format' => ($category !== '' ? $category : 'Équipement photo/vidéo').' · '.$key,
+        'resolution_performance' => 'Performances à confirmer selon la documentation constructeur',
+        'compatibility' => 'Compatibilité à vérifier avec le propriétaire avant la transaction',
+        'connectivity' => 'Connectiques et interfaces visibles sur les photos de l’annonce',
+        'power' => 'Alimentation et autonomie selon les accessoires inclus',
+        'weight_dimensions' => 'Poids et dimensions à confirmer selon la configuration',
+        'included_accessories' => 'Accessoires détaillés dans la description et sur les photos',
+        'highlights' => 'Produit publié par son propriétaire ; contrôle Focal-Shift disponible',
+    ];
+}
+
 function score_tier(int $score): array
 {
     if ($score >= 70) return [
