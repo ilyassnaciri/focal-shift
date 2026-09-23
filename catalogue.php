@@ -7,7 +7,7 @@ $catalogueMode = $catalogueMode ?? (in_array($_GET['mode'] ?? '', ['sale', 'rent
 $isRentalCatalogue = $catalogueMode === 'rental';
 $cataloguePath = $isRentalCatalogue ? 'catalogue-location.php' : 'catalogue-vente.php';
 $pageTitle = $isRentalCatalogue ? 'Catalogue location' : 'Catalogue vente';
-$pageDescription = $isRentalCatalogue ? 'Louez du matériel photo et vidéo vérifié.' : 'Achetez du matériel photo et vidéo décrit et vérifié.';
+$pageDescription = $isRentalCatalogue ? 'Louez du matériel photo et vidéo avec un statut de vérification transparent.' : 'Achetez du matériel photo et vidéo avec une fiche complète et un statut de vérification transparent.';
 $activePage = $isRentalCatalogue ? 'catalogue-rental' : 'catalogue-sale';
 
 $pdo = db();
@@ -119,7 +119,7 @@ require __DIR__ . '/includes/header.php';
         <div class="container">
             <p class="eyebrow"><?= $isRentalCatalogue ? 'Catalogue location' : 'Catalogue vente' ?></p>
             <h1><?= $isRentalCatalogue ? 'Louez pour votre prochain projet.' : 'Achetez avec des informations claires.' ?></h1>
-            <p><?= $isRentalCatalogue ? 'Comparez le tarif journalier, les disponibilités, l’assurance estimée et l’état vérifié avant votre demande.' : 'Comparez le prix, la description et l’état de chaque produit avant de contacter le vendeur.' ?></p>
+            <p><?= $isRentalCatalogue ? 'Comparez le tarif, les disponibilités et le statut vérifié ou non vérifié avant votre demande.' : 'Comparez le prix, la fiche technique et le statut vérifié ou non vérifié avant de contacter le vendeur.' ?></p>
         </div>
     </section>
 
