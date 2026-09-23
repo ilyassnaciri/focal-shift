@@ -27,6 +27,9 @@ if (!$item) {
 }
 $isOwner = $viewer && (int) $viewer['id'] === (int) $item['owner_id'];
 $isReserved = $item['status'] === 'reserved';
+$isProductVerified = ($item['verification_status'] ?? '') === 'approved';
+$verificationRequested = in_array($item['verification_status'] ?? '', ['requested','received'], true);
+$technicalSpecs = decode_technical_specs($item['technical_specs'] ?? null, (string)$item['brand'], (string)$item['model'], (string)$item['category_name']);
 $unavailable = [];
 try {
     $availabilityQuery = db()->prepare('SELECT start_date,end_date,reason FROM equipment_unavailability WHERE equipment_id=:id AND end_date>=CURRENT_DATE ORDER BY start_date LIMIT 8');
@@ -50,7 +53,7 @@ require __DIR__ . '/includes/header.php';
                 <span class="demo-label">Photo de l’équipement</span>
             </div>
             <div class="detail-panel">
-                <?php if ($item['status']==='pending_verification'): ?><div class="availability-badge is-reserved">Vérification du produit requise avant publication</div><?php endif; ?>
+                <?php if ($isProductVerified): ?><div class="product-verification-badge is-verified"><span aria-hidden="true">✓</span><strong>Produit vérifié</strong><small>État et fonctionnement contrôlés</small></div><?php else: ?><div class="product-verification-badge is-unverified"><span aria-hidden="true">!</span><strong>Produit non vérifié</strong><small>Annonce publiée par le propriétaire, contrôle Focal-Shift non réalisé</small></div><?php endif; ?>
                 <?php if ($isReserved): ?><div class="availability-badge is-reserved">Réservé / actuellement loué</div><?php endif; ?>
                 <p class="eyebrow"><?= e($item['category_name']) ?> · <?= e(condition_label($item['condition_grade'])) ?></p>
                 <h1><?= e($item['brand'] . ' ' . $item['model']) ?></h1>
@@ -67,6 +70,7 @@ require __DIR__ . '/includes/header.php';
                 <section class="owner-offer-actions" aria-labelledby="owner-actions-title">
                     <div><p class="eyebrow">Gestion de l’annonce</p><h2 id="owner-actions-title">Cette offre vous appartient.</h2><p>Modifiez ses informations, gérez sa disponibilité ou supprimez-la.</p></div>
                     <div class="owner-action-buttons">
+                        <?php if (!$isProductVerified): ?><a class="button button-verification" href="<?=url('verification.php?id='.(int)$item['id'])?>"><?= $verificationRequested ? 'Suivre ma demande de vérification' : 'Faire vérifier ce produit' ?></a><?php endif; ?>
                         <a class="button" href="<?= url('edit-offer.php?id=' . (int) $item['id']) ?>">Modifier l’annonce</a>
                         <form method="post" action="<?= url('offer-action.php') ?>">
                             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="equipment_id" value="<?= (int) $item['id'] ?>">
@@ -105,6 +109,8 @@ require __DIR__ . '/includes/header.php';
             </div>
         </div>
     </section>
+
+    <section class="section technical-specs-section"><div class="container"><div class="section-heading"><p class="eyebrow">Fiche technique</p><h2>Les caractéristiques essentielles.</h2><p>Informations déclarées par le propriétaire. Elles sont confirmées lors d’une vérification Focal-Shift.</p></div><dl class="technical-specs-grid"><?php foreach(technical_spec_fields() as $specKey=>$specLabel):?><div><dt><?=e($specLabel)?></dt><dd><?=e($technicalSpecs[$specKey]!==''?$technicalSpecs[$specKey]:'Non renseigné')?></dd></div><?php endforeach;?></dl></div></section>
 
     <?php if ($item['available_for_rental']): ?>
     <section class="section availability-section"><div class="container availability-public"><div><p class="eyebrow">Calendrier de location</p><h2>Disponibilités annoncées</h2><p>Les périodes ci-dessous ne peuvent pas être sélectionnées. Le contrôle final est effectué lors de la demande.</p></div><div class="availability-list"><?php if(!$unavailable):?><p class="availability-open"><strong>Disponible</strong><span>Aucune période bloquée à venir.</span></p><?php else:?><?php foreach($unavailable as $period):?><p><strong><?=date('d/m/Y',strtotime($period['start_date']))?> – <?=date('d/m/Y',strtotime($period['end_date']))?></strong><span><?=e($period['reason']?:'Indisponible')?></span></p><?php endforeach;?><?php endif;?></div></div></section>
