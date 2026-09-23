@@ -1,4 +1,4 @@
-# Focal-Shift V16 — Marketplace premium de matériel photo et vidéo
+# Focal-Shift V17 — Marketplace premium de matériel photo et vidéo
 
 Focal-Shift est un prototype fonctionnel de marketplace permettant d’acheter, de louer, de vendre ou de mettre en location du matériel photo et vidéo. Le projet met l’accent sur la confiance, la vérification de l’état, la transparence tarifaire et la remise en circulation des équipements.
 
@@ -13,11 +13,15 @@ Focal-Shift est un prototype fonctionnel de marketplace permettant d’acheter, 
 - Blog avec interviews, tests, guides, FAQ, maillage interne et filtres interactifs ;
 - conformité RGPD, sécurité applicative et accessibilité prises en compte dans le POC.
 
-## Version 16
+## Version 17
 
 - filtres **Tous**, **Interviews**, **Tests produits** et **Guides** désormais fonctionnels ;
 - sept articles éditoriaux dépassant chacun 3 000 caractères ;
 - liens contextuels dans le cœur des articles vers d’autres contenus, les catalogues, les produits et le simulateur ;
+- publication immédiate des offres de vente et de location avec la photo choisie ;
+- badge transparent « Produit non vérifié » tant que le propriétaire n’a pas demandé de contrôle ;
+- demande de vérification accessible au propriétaire depuis sa propre fiche produit ;
+- fiche technique structurée en huit rubriques pour chaque équipement ;
 - état actif visible et utilisable au clavier ;
 - nombre de publications actualisé après chaque filtre ;
 - documentation GitHub et procédure de déploiement public ajoutées ;
