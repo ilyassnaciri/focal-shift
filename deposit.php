@@ -18,6 +18,8 @@ $values = [
     'condition_grade' => 'tres_bon', 'description' => '', 'sale_price' => '',
     'rental_price_day' => '', 'available_for_sale' => false, 'available_for_rental' => false,
     'reuse_count' => '1', 'repaired' => false, 'distance_km' => '25', 'city' => 'Paris',
+    'type_format' => '', 'resolution_performance' => '', 'compatibility' => '', 'connectivity' => '',
+    'power' => '', 'weight_dimensions' => '', 'included_accessories' => '', 'highlights' => '',
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -59,6 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Le tarif journalier doit rester dans la fourchette de ±20 % calculée par le simulateur.';
     }
     if (mb_strlen($values['description']) < 30) $errors[] = 'Décrivez l’équipement en au moins 30 caractères.';
+    $technicalSpecs = technical_specs_from_post($values);
+    foreach (technical_spec_fields() as $specKey => $specLabel) {
+        if (mb_strlen($technicalSpecs[$specKey]) < 2) $errors[] = 'Complétez la caractéristique « '.$specLabel.' ».';
+    }
     if (!isset($cityOptions[$values['city']])) $errors[] = 'Choisissez une zone de remise disponible.';
 
     $reuseCount = filter_var($values['reuse_count'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 999]]);
@@ -105,11 +111,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "INSERT INTO equipment
                 (owner_id, category_id, brand, model, purchase_year, condition_grade, description,
                  sale_price, rental_price_day, available_for_sale, available_for_rental, status,
-                 circular_score, reuse_count, repaired, distance_km, city, latitude, longitude, service_discount)
+                 verification_status, technical_specs, circular_score, reuse_count, repaired, distance_km, city, latitude, longitude, service_discount)
                 VALUES
                 (:owner_id, :category_id, :brand, :model, :purchase_year, :condition_grade, :description,
                  :sale_price, :rental_price_day, :available_for_sale, :available_for_rental, :status,
-                 :circular_score, :reuse_count, :repaired, :distance_km, :city, :latitude, :longitude, :service_discount)"
+                 :verification_status, :technical_specs, :circular_score, :reuse_count, :repaired, :distance_km, :city, :latitude, :longitude, :service_discount)"
             );
             $insert->execute([
                 'owner_id' => (int) $user['id'],
@@ -120,7 +126,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'rental_price_day' => $values['available_for_rental'] ? (float) $rentalPrice : null,
                 'available_for_sale' => (int) $values['available_for_sale'],
                 'available_for_rental' => (int) $values['available_for_rental'],
-                'status' => $values['available_for_rental'] ? 'pending_verification' : 'published',
+                'status' => 'published',
+                'verification_status' => 'not_required',
+                'technical_specs' => json_encode($technicalSpecs, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                 'circular_score' => $score, 'reuse_count' => (int) $reuseCount,
                 'repaired' => (int) $values['repaired'], 'distance_km' => (int) $distanceKm,
                 'city' => $values['city'], 'latitude' => $latitude, 'longitude' => $longitude,
@@ -130,13 +138,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $photoInsert = $pdo->prepare("INSERT INTO equipment_photos (equipment_id, url, photo_type) VALUES (:id, :url, 'listing')");
             $photoInsert->execute(['id' => $equipmentId, 'url' => $imagePath]);
             $pdo->commit();
-            if ($values['available_for_rental']) {
-                flash('success', 'Produit enregistré. La mise en location sera publiée après vérification de son état et de son fonctionnement.');
-                header('Location: ' . url('verification.php?id=' . $equipmentId));
-            } else {
-                flash('success', 'Annonce de vente publiée : elle apparaît maintenant dans le catalogue.');
-                header('Location: ' . url('product.php?id=' . $equipmentId));
-            }
+            flash('success', 'Annonce publiée dans le catalogue avec la mention « Produit non vérifié ». Vous pouvez demander sa vérification depuis sa fiche.');
+            header('Location: ' . url('product.php?id=' . $equipmentId));
             exit;
         } catch (Throwable $exception) {
             if ($pdo->inTransaction()) $pdo->rollBack();
@@ -201,14 +204,24 @@ require __DIR__ . '/includes/header.php';
                     </div>
                 </fieldset>
 
+                <fieldset>
+                    <legend>3. Compléter la fiche technique</legend>
+                    <p class="fieldset-intro">Ces informations apparaîtront dans l’annonce et permettent de comparer les produits sans quitter Focal-Shift.</p>
+                    <div class="form-grid">
+                        <?php foreach (technical_spec_fields() as $specKey => $specLabel): ?>
+                        <div class="field"><label for="<?=e($specKey)?>"><?=e($specLabel)?> *</label><input id="<?=e($specKey)?>" name="<?=e($specKey)?>" maxlength="500" value="<?=e((string)$values[$specKey])?>" required></div>
+                        <?php endforeach; ?>
+                    </div>
+                </fieldset>
+
                 <fieldset class="verification-step">
-                    <legend>3. Préparer la vérification pour une location</legend>
-                    <p class="fieldset-intro">Toute offre de location passe par un contrôle avant publication. Le propriétaire choisit un dépôt partenaire ou un envoi suivi. Le contrôle confirme l’état, le fonctionnement, le score et le tarif journalier.</p>
-                    <ol class="verification-timeline"><li><strong>Pré-demande</strong><span>Informations et photos initiales</span></li><li><strong>Contrôle</strong><span>État, fonctions et accessoires</span></li><li><strong>Validation</strong><span>Score et prix de location confirmés</span></li><li><strong>Publication</strong><span>Badge Produit vérifié visible</span></li></ol>
+                    <legend>4. Publication immédiate et vérification facultative</legend>
+                    <p class="fieldset-intro">L’annonce sera visible immédiatement avec le badge « Produit non vérifié ». Depuis sa fiche, vous pourrez demander un dépôt partenaire ou un envoi suivi. Après contrôle, le badge deviendra « Produit vérifié ».</p>
+                    <ol class="verification-timeline"><li><strong>Publication</strong><span>Annonce et photo visibles immédiatement</span></li><li><strong>Demande</strong><span>Initiée par le propriétaire depuis sa fiche</span></li><li><strong>Contrôle</strong><span>État, fonctions et accessoires</span></li><li><strong>Validation</strong><span>Badge Produit vérifié visible</span></li></ol>
                 </fieldset>
 
                 <fieldset>
-                    <legend>4. Calculer l’indice circulaire</legend>
+                    <legend>5. Calculer l’indice circulaire</legend>
                     <p class="fieldset-intro">Ces données permettent d’établir le niveau d’impact de l’offre.</p>
                     <div class="form-grid">
                         <div class="field"><label for="reuse_count">Locations déjà réalisées</label><input id="reuse_count" name="reuse_count" type="number" min="0" max="999" value="<?= e((string) $values['reuse_count']) ?>"><small>Nombre de locations ou de nouveaux usages déjà effectués avec cet appareil.</small></div>
@@ -218,7 +231,7 @@ require __DIR__ . '/includes/header.php';
                     <p class="field-explanation">À cocher uniquement si une panne a été corrigée et que l’appareil fonctionne normalement. Cette information valorise la réparabilité et l’allongement de la durée de vie.</p>
                 </fieldset>
 
-                <div class="form-submit"><button class="button" type="submit">Enregistrer et poursuivre</button><p>Une offre de vente peut être publiée immédiatement. Une offre de location reste invisible jusqu’à la validation du contrôle.</p></div>
+                <div class="form-submit"><button class="button" type="submit">Publier mon annonce</button><p>La photo choisie et l’annonce apparaîtront immédiatement dans le catalogue correspondant, avec un statut de vérification transparent.</p></div>
             </form>
         </div>
     </section>
