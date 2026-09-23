@@ -74,6 +74,7 @@ CREATE TABLE equipment (
   verified_score TINYINT UNSIGNED NULL,
   verified_rental_price DECIMAL(8,2) NULL,
   verification_notes TEXT NULL,
+  technical_specs JSON NULL,
   circular_score TINYINT UNSIGNED NOT NULL DEFAULT 0,
   reuse_count INT UNSIGNED NOT NULL DEFAULT 0,
   repaired TINYINT(1) NOT NULL DEFAULT 0,
@@ -233,6 +234,16 @@ INSERT INTO equipment
 (3, 4, 'Aputure', 'LS 600d Pro', 2022, 'bon', 'Projecteur LED puissant, contrôleur et valise à roulettes. Révision du ventilateur documentée.', NULL, 60, 0, 1, 'published', 89, 19, 1, 30, '2026-09-11 09:00:00'),
 (1, 5, 'Rode', 'NTG5', 2023, 'tres_bon', 'Micro canon léger avec suspension et bonnette. Son propre, connectique XLR contrôlée.', NULL, 18, 0, 1, 'published', 77, 9, 0, 18, '2026-09-10 15:40:00'),
 (2, 6, 'Atomos', 'Ninja V+', 2022, 'bon', 'Moniteur-enregistreur avec cage et deux batteries. Écran protégé, firmware à jour.', 540, NULL, 1, 0, 'published', 84, 13, 1, 65, '2026-09-09 13:30:00');
+
+-- Les références historiques contrôlées illustrent le badge vérifié.
+-- Les nouvelles annonces restent publiées avec le badge non vérifié jusqu'à la demande du propriétaire.
+UPDATE equipment
+SET verification_status='approved',
+    verified_condition=condition_grade,
+    verified_score=circular_score,
+    verified_rental_price=rental_price_day,
+    verification_notes='Contrôle de démonstration Focal-Shift validé'
+WHERE id IN (1,2,3,4,5,7,8,10);
 
 INSERT INTO transaction_requests
 (equipment_id, buyer_id, transaction_type, rental_start, rental_end, payment_method, item_amount, shipping_amount, insurance_amount, total_amount, status, created_at) VALUES
