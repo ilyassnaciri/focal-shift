@@ -1,0 +1,22 @@
+# Configuration locale et secrets
+.env
+.env.*
+!.env.example
+
+# Fichiers envoyés par les utilisateurs
+uploads/*
+!uploads/.gitkeep
+!uploads/.htaccess
+
+# Système et éditeurs
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Journaux et sauvegardes
+*.log
+*.sql.gz
+*.bak
+vendor/
+node_modules/

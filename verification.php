@@ -1,0 +1,14 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__.'/includes/db.php'; require_once __DIR__.'/includes/functions.php';
+$user=require_login(); $id=filter_input(INPUT_GET,'id',FILTER_VALIDATE_INT);
+$q=db()->prepare('SELECT e.*,c.name category_name FROM equipment e JOIN categories c ON c.id=e.category_id WHERE e.id=:id AND e.owner_id=:owner');$q->execute(['id'=>$id,'owner'=>$user['id']]);$item=$q->fetch();
+if(!$item){http_response_code(404);exit('Produit introuvable.');}
+if($_SERVER['REQUEST_METHOD']==='POST'&&csrf_is_valid($_POST['csrf_token']??null)){
+  $method=in_array($_POST['verification_method']??'', ['partner_dropoff','tracked_shipping'],true)?$_POST['verification_method']:'';
+  if($method){$u=db()->prepare("UPDATE equipment SET verification_status='requested',verification_notes=:notes WHERE id=:id AND owner_id=:owner");$u->execute(['notes'=>'Méthode choisie : '.$method,'id'=>$id,'owner'=>$user['id']]);flash('success','Demande de vérification enregistrée. Les instructions logistiques seront confirmées avant l’envoi.');header('Location: '.url('account.php'));exit;}
+}
+$pageTitle='Vérification du produit';$activePage='deposit';require __DIR__.'/includes/header.php';
+?>
+<main id="main-content"><section class="page-hero page-hero-compact"><div class="container narrow"><p class="eyebrow">Contrôle avant location</p><h1>Faire vérifier <?=e($item['brand'].' '.$item['model'])?>.</h1><p>Le produit n’apparaîtra dans le catalogue de location qu’après validation de son état, de son fonctionnement, de son score et du tarif proposé.</p></div></section><section class="section"><div class="container narrow"><form class="form-card" method="post"><input type="hidden" name="csrf_token" value="<?=e(csrf_token())?>"><fieldset><legend>Choisissez le mode de vérification</legend><div class="choice-grid"><label class="choice-card"><input type="radio" name="verification_method" value="partner_dropoff" required><span><strong>Dépôt partenaire</strong><small>Déposer le produit dans un point de contrôle Focal-Shift.</small></span></label><label class="choice-card"><input type="radio" name="verification_method" value="tracked_shipping" required><span><strong>Envoi suivi</strong><small>Recevoir une étiquette sécurisée après confirmation.</small></span></label></div></fieldset><section class="verification-summary"><h2>Ce qui sera contrôlé</h2><ul class="check-list"><li>État esthétique et cohérence avec les photos</li><li>Fonctions principales, connectiques et accessoires</li><li>Score de confiance du produit</li><li>Prix journalier proposé pour la location</li></ul></section><button class="button button-block" type="submit">Demander la vérification</button></form></div></section></main>
+<?php require __DIR__.'/includes/footer.php'; ?>

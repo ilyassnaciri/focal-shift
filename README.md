@@ -358,3 +358,9 @@ focal-shift/
 ├── assets/images/            Photographies studio originales
 ├── database/focal_shift.sql  Schéma et données de démonstration
 ├── docs/                     Architectures, wireframes, tests, oral
+└── uploads/                  Photos déposées
+```
+
+## Sécurité et passage en production
+
+Le POC applique déjà des requêtes préparées, l'échappement des sorties, la validation serveur, CSRF et le contrôle MIME. Avant production : secrets hors code, HTTPS obligatoire, stockage objet pour les images, scan antivirus, authentification robuste, contrôle d'accès, limitation de débit, logs centralisés, sauvegardes, analyse d'impact RGPD si nécessaire et contrats avec les partenaires de paiement/KYC/assurance.

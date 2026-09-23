@@ -1,0 +1,16 @@
+Installe Focal-Shift V8 sur mon WampServer sans perdre les comptes, annonces, photos ou conversations existants.
+
+1. Sauvegarde entièrement C:\wamp64\www\focal-shift sous un nom horodaté.
+2. Décompresse focal-shift-v8.zip depuis C:\Users\USER\Downloads.
+3. Copie le dossier interne focal-shift-v8 dans C:\wamp64\www puis renomme-le exactement focal-shift.
+4. Recopie le contenu de l’ancien dossier uploads dans C:\wamp64\www\focal-shift\uploads.
+5. Ne réimporte pas database\focal_shift.sql : cela réinitialiserait les données.
+6. Démarre ou redémarre les services WampServer.
+7. Ouvre http://localhost/focal-shift/upgrade-v8.php.
+8. Clique sur « Mettre à niveau sans effacer mes données » si ce bouton apparaît. Si le module est déjà prêt, passe à l’étape suivante.
+9. Ouvre http://localhost/focal-shift/diagnostic.php et vérifie que tous les contrôles sont verts, notamment « Base focal_shift ».
+10. Connecte-toi comme Claire, ouvre une de ses annonces et vérifie la présence des boutons Modifier, Déclarer réservé/loué et Supprimer.
+11. Teste d’abord Modifier, puis le passage en Réservé/loué, puis Remettre disponible.
+12. Pour tester Supprimer sans perdre une annonce utile, crée une annonce temporaire et supprime uniquement celle-ci.
+
+Si une étape échoue, ne réimporte pas SQL et ne supprime pas la sauvegarde. Indique l’URL testée et copie le message d’erreur exact.
