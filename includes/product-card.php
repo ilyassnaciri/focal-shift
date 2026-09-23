@@ -7,6 +7,7 @@ $tier = score_tier($score);
     <a class="product-image" href="<?= url('product.php?id=' . (int) $item['id']) ?>" aria-label="Voir <?= e($item['brand'] . ' ' . $item['model']) ?>">
         <img src="<?= e(equipment_image($item['image_url'] ?? null, $item['category_slug'] ?? 'camera')) ?>" alt="<?= e($item['brand'] . ' ' . $item['model']) ?>" loading="lazy">
         <?php if (!empty($item['available_for_rental'])): ?><span class="offer-type-badge offer-type-rental">À louer</span><?php else: ?><span class="offer-type-badge offer-type-sale">À acheter</span><?php endif; ?>
+        <?php if (($item['verification_status'] ?? '') === 'approved'): ?><span class="catalogue-verification verified">✓ Produit vérifié</span><?php else: ?><span class="catalogue-verification unverified">! Non vérifié</span><?php endif; ?>
         <span class="score-badge score-<?= e($tier['class']) ?>" aria-label="<?= e($tier['label']) ?>"><b aria-hidden="true"><?= e($tier['symbol']) ?></b><small><?= e($tier['label']) ?></small></span>
     </a>
     <div class="product-body">
